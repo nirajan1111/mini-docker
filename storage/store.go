@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -81,8 +82,11 @@ func (s *ImageStore) List() ([]ImageMeta, error) {
 }
 
 // LayerDir returns the path where a specific layer is extracted.
+// We replace "sha256:" prefix with "sha256-" to avoid colons in paths
+// (OverlayFS uses ":" as separator in lowerdir option).
 func (s *ImageStore) LayerDir(digest string) string {
-	return filepath.Join(s.root, "_layers", digest)
+	safe := strings.ReplaceAll(digest, ":", "-")
+	return filepath.Join(s.root, "_layers", safe)
 }
 
 // EnsureDir creates a directory if it doesn't exist.
